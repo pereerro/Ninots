@@ -1,0 +1,78 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=500, initial-scale=1">
+        <link rel="stylesheet" type="text/css" href="ninots.css" />
+        <script src="ninots.js"></script> 
+        <script src="ninots_utilitats.js"></script> 
+<!--        <script src="ninots_fantasmes.js"></script> -->
+        <script src="ninots_edita.js"></script> 
+        <script>
+            var ninots, ninots2;
+            window.addEventListener('load', function() {
+                ninots = new Ninots(document.getElementById('svg'));
+                ninots.activa_edicio_esquema();
+                ninots2 = new Ninots(document.getElementById('svg2'));
+                ninots2.activa_edicio_esquema();
+            });
+
+            function posa_data() {
+                ninots.posa_esquema(
+                    JSON.parse(
+                        document.getElementById('clip_data').value));
+            };
+
+            function recupera_data() {
+                document.getElementById('clip_data').value = JSON.stringify(ninots.treu_esquema());
+            }
+            
+            function posa_data2() {
+                ninots2.posa_esquema(
+                    JSON.parse(
+                        document.getElementById('clip_data2').value));
+            };
+
+            function recupera_data2() {
+                document.getElementById('clip_data2').value = JSON.stringify(ninots2.treu_esquema());
+            }
+            
+            window.onresize = function() {
+                ninots.resize();
+                ninots2.resize();
+            };
+        </script>
+    </head>
+    <body>
+        <svg id="svg" width="100%" height="400px" style="border:2px;border-style: solid">
+        </svg>
+        <div id="ninots_data">
+            <textarea width="100%" rows="8" id="clip_data"></textarea>
+            <button id="recupera_data" onclick="recupera_data()">Recupera</button>
+            <button id="posa_data" onclick="posa_data()">Posa</button>
+        </div>
+        <ul>
+            <li>Ninot virtual <span id="ninot_svg"></span></li>
+            <li>Ninot pista <span id="ninot_pista"></span></li>
+            <li>Ninot inicial <span id="ninot_inicial"></span></li>
+            <li>Ninot desplaçament <span id="ninot_despl"></span></li>
+        
+        </ul>
+        <svg id="svg2" width="100%" height="400px" style="border:2px;border-style: solid">
+        </svg>
+        <div id="ninots_data">
+            <textarea width="100%" rows="8" id="clip_data2"></textarea>
+            <button id="recupera_data2" onclick="recupera_data2()">Recupera</button>
+            <button id="posa_data2" onclick="posa_data2()">Posa</button>
+        </div>
+        <ul>
+            <li>Ninot virtual <span id="ninot_svg"></span></li>
+            <li>Ninot pista <span id="ninot_pista"></span></li>
+            <li>Ninot inicial <span id="ninot_inicial"></span></li>
+            <li>Ninot desplaçament <span id="ninot_despl"></span></li>
+        
+        </ul>
+    </body>
+
+
+</html>
+

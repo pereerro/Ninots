@@ -1,0 +1,40 @@
+.ninots_ninot {
+    stroke: black;
+    stroke-width: 1px;
+    fill: white;
+}
+
+.ninots_camp {
+    stroke: grey;
+    stroke-width: 2px;
+    fill: #03FFD0;
+}
+
+.ninot_selec_class {
+  fill: red;
+}
+/*
+.ninot_selec {
+  fill: red;
+  -webkit-animation-name: seleccionat; */ /* Safari 4.0 - 8.0 */ /*
+  -webkit-animation-duration: 1s; */ /* Safari 4.0 - 8.0 */ /*
+  animation-name: seleccionat;
+  animation-duration: 1s;
+}
+*/
+
+/* Safari 4.0 - 8.0 */
+@-webkit-keyframes seleccionat {
+  from {fill: red;}
+  to {fill: none;}
+}
+
+/* Standard syntax */
+@keyframes seleccionat {
+  from {fill: red;}
+  to {fill: none;}
+}
+
+.templ_selec {
+    fill: #FF0000;
+}
