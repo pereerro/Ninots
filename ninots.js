@@ -46,7 +46,10 @@ var Ninots = function(svg, data) {
         this.posa_esquema(data);
     else
         this.ninots = Ninots.sense_ninots(); // sense dades
-
+    
+    this.marge = 30;
+    this.marge_esq = 30;
+    this.despl_cist = 20;
     this.resize();
 }
 
@@ -150,7 +153,7 @@ Ninots.prototype.to_coords_svg = function(coords) {
 }
 
 Ninots.prototype.get_terreny_dims = function() {
-    return {width: this.svg_ninots.width.baseVal.value, height: this.svg_ninots.height.baseVal.value};
+    return {width: this.svg_ninots.width.baseVal.value-this.marge*2-this.marge_esq, height: this.svg_ninots.height.baseVal.value-this.marge*2, x:this.marge+this.marge_esq, y:this.marge,};
 }
 
 /**
@@ -159,8 +162,8 @@ Ninots.prototype.get_terreny_dims = function() {
 */
 Ninots.prototype.get_coords_cistelles = function() {
     var dims = this.get_terreny_dims();
-    return {cistella1: [20, dims.height / 2],
-            cistella2: [dims.width - 20,dims.height / 2]};
+    return {cistella1: [this.marge_esq+this.marge + this.despl_cist, dims.height / 2 + this.marge],
+            cistella2: [dims.width - this.despl_cist + this.marge + this.marge_esq, dims.height / 2 + this.marge]};
 }
 
 /**
@@ -185,9 +188,10 @@ Ninots.prototype.resize = function() {
     var alt_svg = dims.height;
     this.scalax = (ample_svg/bb.width);
     this.scalay = (alt_svg/bb.height);
-    this.camp.style.transform = 'scale('+this.scalax+','+this.scalay+') translate('+(-bb.x)+'px,'+(-bb.y)+'px)';
-    this.cistella1.style.transform = 'translate(20px,'+(alt_svg / 2)+'px)';
-    this.cistella2.style.transform = 'translate('+(ample_svg-20)+'px,'+(alt_svg / 2)+'px)';
+    this.camp.style.transform = 'scale('+this.scalax+','+this.scalay+') translate('+(-bb.x + dims.x / this.scalax)+'px,'+(-bb.y + dims.y / this.scalay)+'px)';
+    var ccist = this.get_coords_cistelles();
+    this.cistella1.style.transform = 'translate('+ccist.cistella1[0]+'px,'+ccist.cistella1[1]+'px)';
+    this.cistella2.style.transform = 'translate('+ccist.cistella2[0]+'px,'+ccist.cistella2[1]+'px)';
     for (var k in this.ninots.llista) {
         var dninot = this.ninots.llista[k];
         dninot.resize();
@@ -212,6 +216,7 @@ Ninots.prototype.dibuixa_camp = function() {
     var camp = document.createElementNS(Ninots.ns, 'path');
     camp.setAttributeNS(null, 'd', 'm57.273 191.64h-57.273v53.571h57.273zm-21.724 26.661a22.273 26.786 0 0 0 22.273 26.786 22.273 26.786 0 0 0 22.273-26.786 22.273 26.786 0 0 0-22.273-26.786 22.273 26.786 0 0 0-22.273 26.786zm52.53 3.0887c0 35.446-25.795 64.714-57.614 64.806l-30.465 0.0877v-128.57l30.465-0.5027c31.816-0.52498 57.614 28.735 57.614 64.181zm134.65-27.964h57.273v53.571h-57.273zm21.724 26.661a22.273 26.786 0 0 1-22.273 26.786 22.273 26.786 0 0 1-22.273-26.786 22.273 26.786 0 0 1 22.273-26.786 22.273 26.786 0 0 1 22.273 26.786zm-52.53 1.303c0 35.446 25.795 64.714 57.614 64.806l30.465 0.0877v-128.57l-30.465-0.5027c-31.816-0.52498-57.614 28.735-57.614 64.181zm-51.921-74.392h140v150h-140zm22.469 72.032a22.273 26.786 0 0 1-22.273 26.786 22.273 26.786 0 0 1-22.273-26.786 22.273 26.786 0 0 1 22.273-26.786 22.273 26.786 0 0 1 22.273 26.786zm-162.47-72.032h140v150h-140z');
     camp.setAttribute('class', 'ninots_camp');
+    camp.setAttribute('fill-rule', "evenodd");
     this.svg_ninots.appendChild(camp);
     this.camp = camp;
     
