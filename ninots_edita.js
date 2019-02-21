@@ -51,7 +51,7 @@ Ninots.prototype.engega_ninot = function(nom_ninot) {
 }
 
 Ninots.prototype.dibuixa_ninots_tmpl = function() {
-    var x=20,y=20;
+    var x=20,y=20,inc=40;
     for (var k in Ninots.ninots_tmpl) {
         var ninot_tmpl = Ninots.ninots_tmpl[k];
         var ninot = Ninots.dibuixa_ninots([x,y],this.svg_ninots,ninot_tmpl.tipus);
@@ -59,8 +59,24 @@ Ninots.prototype.dibuixa_ninots_tmpl = function() {
         ninot.style.strokeWidth = '1';
 
         this.ninots_mostra[ninot_tmpl.tipus] = ninot;
-        y += 40;
+        y += inc;
     }
+    
+    y = this.svg_ninots.height.baseVal.value - inc * 1.5;
+    var pathArrow = 'm-11.456-11.224 4.8873 4.0904c11.311-7.4606 17.744 9.1086 17.235 12.344 0 0-12.115 7.7956-12.115 7.7956 6.6644-4.2884 7.3244-18.399-1.9974-16.551l4.1043 4.3309-10.271-0.5794-1.8435-11.43z';
+    var leftArrow = document.createElementNS(Ninots.ns, 'path');
+    leftArrow.setAttributeNS(null, 'd', 'M20,'+y+'\n'+pathArrow);
+    leftArrow.setAttribute('class', 'restore_state');
+    this.svg_ninots.appendChild(leftArrow);
+    this.leftArrow_coords = [20,y];
+
+    y += inc;
+    pathArrow = 'm10.695-11.224-4.8873 4.0904c-11.311-7.4606-17.744 9.1086-17.235 12.344l12.115 7.7956c-6.6644-4.2884-7.3244-18.399 1.9974-16.551 0 0-4.1043 4.3309-4.1043 4.3309l10.271-0.5794 1.8435-11.43z';
+    var rightArrow = document.createElementNS(Ninots.ns, 'path');
+    rightArrow.setAttributeNS(null, 'd', 'M20,'+y+'\n'+pathArrow);
+    rightArrow.setAttribute('class', 'restore_state');
+    this.svg_ninots.appendChild(rightArrow);
+    this.rightArrow_coords = [20,y];
 }
 
 Ninots.prototype.esborra_ninots_tmpl = function() {
@@ -91,7 +107,6 @@ Ninots.prototype.desactiva_edicio_esquema = function() {
 }
 
 Ninots.Ninot.prototype.esborra = function() {
-    this.esborrat = true;
     this.ninot.remove();
     this.fletxa.remove();
 
@@ -103,11 +118,29 @@ Ninots.Ninot.prototype.esborra = function() {
         }
     }
 
+    delete llista[this.id_ninot];
     if (this.tira_a !== undefined) {
         this.tir.remove();
         this.tira_a = undefined;
     }
 
+}
+
+Ninots.Ninot.prototype.esborra_passi = function() {
+    this.passi.remove();
+    this.passi = undefined;
+    if (this.passi_a.tira_a !== undefined) {
+        this.passi_a.tira_a = undefined;
+        this.passi_a.tir.remove();
+        this.passi_a.tir= undefined;
+    }
+    this.passi_a = undefined;
+}
+
+Ninots.Ninot.prototype.esborra_tir = function() {
+    this.tir.remove();
+    this.tir = undefined;
+    this.tira_a = undefined;
 }
 
 
@@ -146,13 +179,23 @@ Ninots.PistaHandler.prototype.afegeixPunt = function (ev) {
     if (this.posant_ninot.tira_a) {
         this.posant_ninot.dibuixa_tir();
     }
+
+    if (this.posant_ninot.rotini === undefined) {
+        this.posant_ninot.rotini = this.posant_ninot.rotate();
+    }
 }
 
-Ninots.PistaHandler.prototype.ninot_mes_proper = function(toc, filtre) {
-    if (filtre === undefined) filtre = 'per_seleccionar';
+Ninots.PistaHandler.prototype.ninot_mes_proper = function(toc, after_selec) {
 
-    var ninot_selec, distc;
-    if (filtre === 'poden_rebre') {
+    var ninot_selec = '_previous_state';
+    var distc = Ninots.dist_entre_punts(toc, this.ninots.leftArrow_coords);
+    var distr = Ninots.dist_entre_punts(toc, this.ninots.rightArrow_coords);
+    if (distr < distc) {
+        distc = distr;
+        ninot_selec = '_next_state';
+    }
+    
+    if (after_selec && this.ninot_selec.has_ball_end()) {
         var coords_cists = this.ninots.get_coords_cistelles();
         var distc1 = Ninots.dist_entre_punts(toc, coords_cists.cistella1);
         var distc2 = Ninots.dist_entre_punts(toc, coords_cists.cistella2);
@@ -163,15 +206,14 @@ Ninots.PistaHandler.prototype.ninot_mes_proper = function(toc, filtre) {
             ninot_selec = 'cistella2';
             distc = distc2;
         }
-    } else {
-        distc = 10000;
     }
-    
+
     var llista = this.ninots.ninots.llista;
     for (var k1 in llista) {
         var dninot = llista[k1];
-        if (dninot.esborrat)
-            continue;
+        if (after_selec && this.ninot_selec !== dninot)
+            if (! (dninot.pot_rebre && this.ninot_selec.amb_pilota) )
+                continue; // possible passi a un nino que no pot rebre o d'un que no te pilota
         var coords_svg = dninot.get_coords_svg();
         var dist = Ninots.dist_entre_punts(toc, coords_svg);
         if (dist < distc) {
@@ -180,7 +222,7 @@ Ninots.PistaHandler.prototype.ninot_mes_proper = function(toc, filtre) {
         }
     }
 
-    if (filtre === 'per_seleccionar')
+    if (! after_selec)
         for (var k2 in this.ninots.ninots_mostra) {
             var nt = this.ninots.ninots_mostra[k2];
             var d = nt.getAttribute('d');
@@ -192,6 +234,7 @@ Ninots.PistaHandler.prototype.ninot_mes_proper = function(toc, filtre) {
                 distc = distt;
             }
         } 
+
     return ninot_selec;
 }
 
@@ -229,6 +272,7 @@ Ninots.PistaHandler.iniciaNinot = function(ph) {
     if ( ph.ninot_selec !== undefined ) {
         ninot_self.movent_ninot_xy = ph.ninot_selec.coords_svg;
         ph.ninot_selec.despls = [];
+        ph.ninot_selec.rotini = undefined;
         dninot = ph.ninot_selec;        
     } else {
         dninot = ninot_self.nouNinot(coords_svg);
@@ -272,40 +316,44 @@ Ninots.PistaHandler.prototype.handleEvent = function(ev) {
         case "mouseup":
             if (this.toc2 !== undefined) {
                 clearTimeout(this.toc_timer);
-                var altre = this.ninot_mes_proper(this.toc2, 'poden_rebre');
+                var altre = this.ninot_mes_proper(this.toc2, true);
                 if (altre instanceof Ninots.Ninot) {
                     if (altre !== this.ninot_selec) {
-                        console.log("Dibuixant passi de "+this.ninot_selec.id_ninot+" a "+altre.id_ninot);
+                        // passi
+                        if (this.ninot_selec.tira_a !== undefined)
+                            this.ninot_selec.esborra_tir();
                         this.ninot_selec.passi_a = altre;
                         this.ninot_selec.dibuixa_passi();
                     } else {
                         if (this.ninot_selec.passi_a !== undefined) {
-                            console.log("Esborra passi de "+this.ninot_selec.id_ninot+" a "+this.ninot_selec.passi_a.id_ninot);
-                            this.ninot_selec.passi.remove();
-                            this.ninot_selec.passi = undefined;
-                            this.ninot_selec.passi_a = undefined;
+                            this.ninot_selec.esborra_passi();
                         } else if (this.ninot_selec.tira_a !== undefined) {
-                            console.log("Esborra tir de "+this.ninot_selec.id_ninot+" a "+this.ninot_selec.tira_a);
-                            this.ninot_selec.tir.remove();
-                            this.ninot_selec.tir = undefined;
-                            this.ninot_selec.tira_a = undefined;
+                            this.ninot_selec.esborra_tir();
                         } else {
                             this.ninot_selec.esborra();
                         }
                     }
                 } else {
                     // tir
+                    if (this.ninot_selec.passi_a !== undefined)
+                        this.ninot_selec.esborra_passi();
                     this.ninot_selec.tira_a = altre;
                     this.ninot_selec.dibuixa_tir();
                 }
                 Ninots.PistaHandler.acabaSeleccio(this);
+                this.ninots.saveState();
             } else if (this.toc !== undefined) { // s'ha aixecat la pressió abans de començar ninot
                 clearTimeout(this.toc_timer);
                 var mes_proper = this.ninot_mes_proper(this.toc);
                 if (mes_proper instanceof Ninots.Ninot) {
                     this.selecciona_ninot(mes_proper);
                 } else if (typeof mes_proper === 'string') {
-                    this.ninots.engega_ninot(mes_proper);
+                    if (mes_proper === '_previous_state') {
+                        this.ninots.restoreState('left');
+                    } else if (mes_proper === '_next_state') {
+                        this.ninots.restoreState('right');
+                    } else
+                        this.ninots.engega_ninot(mes_proper);
                 }
                 this.toc = undefined;
             } else {
@@ -313,7 +361,37 @@ Ninots.PistaHandler.prototype.handleEvent = function(ev) {
                     this.afegeixPunt();
                 clearInterval(this.posant_ninot_timer);
                 this.posant_ninot = null;
+                this.ninots.saveState();
             }
             break;
     }
+}
+
+
+// gestio d'estat
+
+Ninots.prototype.saveState = function() {
+    if (this.estats === undefined) {
+        this.estats = [];
+        this.punter_estat = 0;
+    }
+    if (this.punter_estat < this.estats.length)
+        this.estats.splice(this.punter_estat, this.estats.length - this.punter_estat);
+    this.estats.push(this.treu_esquema());
+    this.punter_estat ++;
+}
+
+Ninots.prototype.restoreState = function(direccio) {
+    if (this.estats === undefined)
+        return;
+    if (direccio === 'left') {
+        if (this.punter_estat == 0)
+            return;
+        this.punter_estat --;
+    } else {
+        if (this.punter_estat >= this.estats.length)
+            return;
+        this.punter_estat ++;
+    }
+    this.posa_esquema(this.estats[this.punter_estat-1]);
 }

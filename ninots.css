@@ -10,6 +10,12 @@
     fill: #9baaff;
 }
 
+.ninots_tir {
+    stroke: black;
+    stroke-width: 2px;
+    fill: none;
+}
+
 .ninot_selec_class {
   fill: red;
 }

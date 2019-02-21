@@ -5,15 +5,30 @@
         <link rel="stylesheet" type="text/css" href="ninots.css" />
         <script src="ninots.js"></script> 
         <script src="ninots_utilitats.js"></script> 
-<!--        <script src="ninots_fantasmes.js"></script> -->
+        <script src="ninots_fantasmes.js"></script>
         <script src="ninots_edita.js"></script> 
         <script>
             var ninots, ninots2;
             window.addEventListener('load', function() {
                 ninots = new Ninots(document.getElementById('svg'));
                 ninots.activa_edicio_esquema();
+                document.getElementById('mou_phantom1').addEventListener('input', function(ev) {
+                    Ninots.mouPhantoms(ninots, ev.target.value); 
+                });
+                document.getElementById('mou_auto1').addEventListener('change', function(ev) {
+                    if (ev.target.checked) ninots.startPhantoms(); else ninots.stopPhantoms();
+                });
+
                 ninots2 = new Ninots(document.getElementById('svg2'));
                 ninots2.activa_edicio_esquema();
+                document.getElementById('mou_phantom2').addEventListener('input', function(ev) {
+                    Ninots.mouPhantoms(ninots2, ev.target.value); 
+                });
+                document.getElementById('mou_auto2').addEventListener('change', function(ev) {
+                    if (ev.target.checked) ninots2.startPhantoms(); else ninots2.stopPhantoms();
+                });
+                
+                
             });
 
             function posa_data() {
@@ -50,6 +65,7 @@
             <button id="recupera_data" onclick="recupera_data()">Recupera</button>
             <button id="posa_data" onclick="posa_data()">Posa</button>
         </div>
+        <input type="range" id="mou_phantom1" /><input type="checkbox" id="mou_auto1" checked />
         <ul>
             <li>Ninot virtual <span id="ninot_svg"></span></li>
             <li>Ninot pista <span id="ninot_pista"></span></li>
@@ -57,6 +73,7 @@
             <li>Ninot desplaçament <span id="ninot_despl"></span></li>
         
         </ul>
+        <hr />
         <svg id="svg2" width="100%" height="400px" style="border:2px;border-style: solid">
         </svg>
         <div id="ninots_data">
@@ -64,6 +81,7 @@
             <button id="recupera_data2" onclick="recupera_data2()">Recupera</button>
             <button id="posa_data2" onclick="posa_data2()">Posa</button>
         </div>
+        <input type="range" id="mou_phantom2" /><input type="checkbox" id="mou_auto2" checked />
         <ul>
             <li>Ninot virtual <span id="ninot_svg"></span></li>
             <li>Ninot pista <span id="ninot_pista"></span></li>

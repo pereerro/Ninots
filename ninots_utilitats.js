@@ -36,8 +36,13 @@ Ninots.setAttributes = function(el, attrs) {
     }
 }
 
-Ninots.trobar_punt_anterior_fi = function(inici, fi, punts_abans) {
-    return fi; // TODO
+Ninots.get_segment = function(inici, fi, punts_abans) {
+    var x = fi[0] - inici[0];
+    var y = fi[1] - inici[1];
+    var h = punts_abans / Math.pow(Math.pow(x,2) + Math.pow(y,2), 1/2);
+    var p1 = [inici[0] + x*h, inici[1] + y*h];
+    var p2 = [fi[0] - x*h, fi[1] - y*h];
+    return [p1, p2]; // TODO
 }
 
 Ninots.getOffset = function( el ) {

@@ -50,15 +50,31 @@ Ninots.torna_angle = function(x1, y1, x2, y2) {
     return rot + Math.PI / 2;
 }
 
-Ninots.mouPhantoms = function(self_ninots) {
+Ninots.prototype.startPhantoms = function() {
+    this.stopPhantoms();
+    this.mouNinots = setInterval(Ninots.mouPhantoms, 40, this);
+}
+Ninots.prototype.stopPhantoms = function() {
+    if (this.mouNinots !== undefined)
+        clearInterval(this.mouNinots);
+    for (var k in this.ninots.llista) {
+        var ninot = this.ninots.llista[k];
+        if (ninot.phantom !== undefined) {
+            ninot.phantom.remove();
+            ninot.phantom = undefined;
+        }
+    }
+}
+Ninots.mouPhantoms = function(self_ninots, anim) {
     // TODO: revisar millora amb https://bl.ocks.org/mbostock/1705868 o https://css-tricks.com/svg-line-animation-works/
+    if (anim !== undefined)
+        self_ninots.anim = anim;
     if (self_ninots.anim === undefined)
         self_ninots.anim = 0;
     for (var k in self_ninots.ninots.llista) {
         var ninot = self_ninots.ninots.llista[k];
-        if (ninot.esborrat)
-            continue;
-        ninot.posaPhantom(self_ninots.anim);
+        if (ninot.es_mou)
+            ninot.posaPhantom(self_ninots.anim);
     }
     self_ninots.anim ++;
     if (self_ninots.anim >= 100)
@@ -84,7 +100,7 @@ Ninots.Ninot.prototype.esborra = function() {
 Ninots.Ninot.prototype.posaPhantom = function(percentatge) {
     var coords_svg = this.obj_ninots.to_coords_svg([this.x, this.y]);
     if ( this.phantom === undefined || this.phantom.tagName !== 'path' ) {
-        this.phantom = Ninots.ninots_tmpl[this.tipus].dibuixa(coords_svg, this.obj_ninots.svg_ninots, 'ninots_phantom');            
+        this.phantom = this.tmpl.dibuixa(coords_svg, this.obj_ninots.svg_ninots, 'ninots_phantom');            
     }
     var tl = this.fletxa.getTotalLength();
     var l = tl * percentatge / 100;
@@ -109,7 +125,7 @@ Ninots.Ninot.prototype.posaPhantom = function(percentatge) {
     }
     [this.phantom_x, this.phantom_y] = [dx, dy]; // guarda per calcular següent rotació
 
-    if (this.phantom_rotini !== undefined) {
+    if (! isNaN(this.phantom_rotini)) {
         this.ninot.setAttribute('transform', 'rotate('+(this.phantom_rotini * 180 / Math.PI)+','+coords_svg[0]+','+coords_svg[1]+')');
     }
     if (! isNaN(rot)) 
