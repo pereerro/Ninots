@@ -57,39 +57,57 @@ Ninots.prototype.dibuixa_ninots_tmpl = function() {
         var ninot = Ninots.dibuixa_ninots([x,y],this.svg_ninots,ninot_tmpl.tipus);
         ninot.style.stroke = 'rgb(0,0,0)';
         ninot.style.strokeWidth = '1';
-
+        if (this.ninots_mostra[ninot_tmpl.tipus] !== undefined)
+            this.ninots_mostra[ninot_tmpl.tipus].remove();
         this.ninots_mostra[ninot_tmpl.tipus] = ninot;
         y += inc;
     }
-    
+
     y = this.svg_ninots.height.baseVal.value - inc * 1.5;
     var pathArrow = 'm-11.456-11.224 4.8873 4.0904c11.311-7.4606 17.744 9.1086 17.235 12.344 0 0-12.115 7.7956-12.115 7.7956 6.6644-4.2884 7.3244-18.399-1.9974-16.551l4.1043 4.3309-10.271-0.5794-1.8435-11.43z';
-    var leftArrow = document.createElementNS(Ninots.ns, 'path');
-    leftArrow.setAttributeNS(null, 'd', 'M20,'+y+'\n'+pathArrow);
-    leftArrow.setAttribute('class', 'restore_state');
-    this.svg_ninots.appendChild(leftArrow);
+    if (this.leftArrow !== undefined)
+        this.leftArrow.remove();
+    this.leftArrow = document.createElementNS(Ninots.ns, 'path');
+    this.leftArrow.setAttributeNS(null, 'd', 'M20,'+y+'\n'+pathArrow);
+    this.leftArrow.setAttribute('class', 'restore_state');
+    this.svg_ninots.appendChild(this.leftArrow);
     this.leftArrow_coords = [20,y];
 
     y += inc;
     pathArrow = 'm10.695-11.224-4.8873 4.0904c-11.311-7.4606-17.744 9.1086-17.235 12.344l12.115 7.7956c-6.6644-4.2884-7.3244-18.399 1.9974-16.551 0 0-4.1043 4.3309-4.1043 4.3309l10.271-0.5794 1.8435-11.43z';
-    var rightArrow = document.createElementNS(Ninots.ns, 'path');
-    rightArrow.setAttributeNS(null, 'd', 'M20,'+y+'\n'+pathArrow);
-    rightArrow.setAttribute('class', 'restore_state');
-    this.svg_ninots.appendChild(rightArrow);
+    if (this.rightArrow !== undefined)
+        this.rightArrow.remove();
+    this.rightArrow = document.createElementNS(Ninots.ns, 'path');
+    this.rightArrow.setAttributeNS(null, 'd', 'M20,'+y+'\n'+pathArrow);
+    this.rightArrow.setAttribute('class', 'restore_state');
+    this.svg_ninots.appendChild(this.rightArrow);
     this.rightArrow_coords = [20,y];
 }
 
 Ninots.prototype.esborra_ninots_tmpl = function() {
     for (var k in this.ninots_mostra) {
-        this.ninots_mostra[k].ninot_mostra.remove();
-        this.ninots_mostra[k].ninot_mostra = null;
+        var n = this.ninots_mostra[k];
+        if (n !== undefined) {
+            n.remove();
+        }
+        this.ninots_mostra[k] = undefined;
     }
+    if (this.leftArrow !== undefined)
+        this.leftArrow.remove();
+    if (this.rightArrow !== undefined)
+        this.rightArrow.remove();
+    this.leftArrow = undefined;
+    this.rightArrow = undefined;
 }
 
 Ninots.captured_events = ['mousedown','mousemove','mouseup','touchstart','touchmove','touchend'];
 
 Ninots.prototype.activa_edicio_esquema = function() {
-    this.ninots_mostra = {};
+    this.marge_esq = 30;
+    this.resize();
+
+    if (this.ninots_mostra === undefined)
+        this.ninots_mostra = {};
     if (this.pistaHandler === undefined)
         this.pistaHandler = new Ninots.PistaHandler(this);
     Ninots.captured_events.forEach(function(et) {
@@ -100,6 +118,9 @@ Ninots.prototype.activa_edicio_esquema = function() {
 }
 
 Ninots.prototype.desactiva_edicio_esquema = function() {
+    this.marge_esq = 0;
+    this.resize();
+
     Ninots.captured_events.forEach(function(et) {
         this.svg_ninots.removeEventListener(et, this.pistaHandler);
     }, this);
@@ -194,7 +215,7 @@ Ninots.PistaHandler.prototype.ninot_mes_proper = function(toc, after_selec) {
         distc = distr;
         ninot_selec = '_next_state';
     }
-    
+
     if (after_selec && this.ninot_selec.has_ball_end()) {
         var coords_cists = this.ninots.get_coords_cistelles();
         var distc1 = Ninots.dist_entre_punts(toc, coords_cists.cistella1);

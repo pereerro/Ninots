@@ -18,6 +18,9 @@
                 document.getElementById('mou_auto1').addEventListener('change', function(ev) {
                     if (ev.target.checked) ninots.startPhantoms(); else ninots.stopPhantoms();
                 });
+                document.getElementById('edit1').addEventListener('change', function(ev) {
+                    if (ev.target.checked) ninots.activa_edicio_esquema(); else ninots.desactiva_edicio_esquema();
+                });
 
                 ninots2 = new Ninots(document.getElementById('svg2'));
                 ninots2.activa_edicio_esquema();
@@ -27,8 +30,9 @@
                 document.getElementById('mou_auto2').addEventListener('change', function(ev) {
                     if (ev.target.checked) ninots2.startPhantoms(); else ninots2.stopPhantoms();
                 });
-                
-                
+                document.getElementById('edit1').addEventListener('change', function(ev) {
+                    if (ev.target.checked) ninots.activa_edicio_esquema(); else ninots.desactiva_edicio_esquema();
+                });
             });
 
             function posa_data() {
@@ -61,18 +65,15 @@
         <svg id="svg" width="100%" height="400px" style="border:2px;border-style: solid">
         </svg>
         <div id="ninots_data">
-            <textarea width="100%" rows="8" id="clip_data"></textarea>
+            Ninots data:
             <button id="recupera_data" onclick="recupera_data()">Recupera</button>
             <button id="posa_data" onclick="posa_data()">Posa</button>
+            <textarea width="100%" rows="8" id="clip_data"></textarea>
         </div>
-        <input type="range" id="mou_phantom1" /><input type="checkbox" id="mou_auto1" checked />
-        <ul>
-            <li>Ninot virtual <span id="ninot_svg"></span></li>
-            <li>Ninot pista <span id="ninot_pista"></span></li>
-            <li>Ninot inicial <span id="ninot_inicial"></span></li>
-            <li>Ninot desplaçament <span id="ninot_despl"></span></li>
-        
-        </ul>
+        <div>
+            <span class="test_option_box">Phantoms: <input type="range" id="mou_phantom1" /><input type="checkbox" id="mou_auto1" checked /></span>
+            <span class="test_option_box">Edit: <input type="checkbox" id="edit1" checked /></span>
+        </div>
         <hr />
         <svg id="svg2" width="100%" height="400px" style="border:2px;border-style: solid">
         </svg>
@@ -81,14 +82,10 @@
             <button id="recupera_data2" onclick="recupera_data2()">Recupera</button>
             <button id="posa_data2" onclick="posa_data2()">Posa</button>
         </div>
-        <input type="range" id="mou_phantom2" /><input type="checkbox" id="mou_auto2" checked />
-        <ul>
-            <li>Ninot virtual <span id="ninot_svg"></span></li>
-            <li>Ninot pista <span id="ninot_pista"></span></li>
-            <li>Ninot inicial <span id="ninot_inicial"></span></li>
-            <li>Ninot desplaçament <span id="ninot_despl"></span></li>
-        
-        </ul>
+        <div>
+            <span class="test_option_box">Phantoms: <input type="range" id="mou_phantom2" /><input type="checkbox" id="mou_auto2" checked /></span>
+            <span class="test_option_box">Edit: <input type="checkbox" id="edit2" checked /></span>
+        </div>
     </body>
 
 
