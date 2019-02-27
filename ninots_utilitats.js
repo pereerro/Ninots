@@ -59,7 +59,7 @@ Ninots.angle_entre_punts = function(p1,p2) {
     var c_oposat = p2[1] - p1[1];
     var ret = Math.atan(c_oposat / c_contigu) * 180 / Math.PI;
     if ( p2[0] - p1[0] < 0 )
-        ret = ret +180;
+        ret = ret + 180;
     return ret
 }
 

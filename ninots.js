@@ -182,19 +182,31 @@ Ninots.prototype.get_coords_cistelles = function() {
 * Incorpora la marca de fi de fletxa al SVG per usar-se en les fletxes.
 */
 Ninots.prototype.preparaMarcaFinalFletxes = function() {
-    var fletxa = document.createElementNS(Ninots.ns, 'marker');
-    Ninots.setAttributes(fletxa, {id: 'despls_ninots_fletxa', markerWidth: '10', markerHeight: "10", refX: "0", refY: "3", orient: "auto", markerUnits: "strokeWidth",});
-    var path_fletxa = document.createElementNS(Ninots.ns, 'path');
-    Ninots.setAttributes(path_fletxa, {d: "M0,0 L0,6 L9,3 z", style: "fill: #000000", });
-    fletxa.appendChild(path_fletxa);
-    this.svg_ninots.appendChild(fletxa);    
+    if (this.marker === undefined) {
+        this.marker = document.createElementNS(Ninots.ns, 'marker');
+        Ninots.setAttributes(this.marker, {id: 'despls_ninots_fletxa', markerWidth: '10', markerHeight: "10", refX: "0", refY: "3", orient: "auto", markerUnits: "strokeWidth",});
+        var path_fletxa = document.createElementNS(Ninots.ns, 'path');
+        Ninots.setAttributes(path_fletxa, {d: "M0,0 L0,6 L9,3 z", style: "fill: #000000", });
+        this.marker.appendChild(path_fletxa);
+    }
+    if ( ! (this.marker.parentElement instanceof SVGElement) )
+        this.svg_ninots.appendChild(this.marker);
 }
 
 /**
 * Redimensiona els elements del SVG controlats per Ninots
 */
 Ninots.prototype.resize = function() {
-    var bb = this.camp.getBBox();
+    this.preparaMarcaFinalFletxes();
+    [this.camp, this.cistella1, this.cistella2].forEach(function(svg_path) {
+        if (! svg_path.parentElement)
+            this.svg_ninots.appendChild(svg_path);
+    }, this);    
+    try {
+        var bb = this.camp.getBBox();
+    } catch(er) {
+        return;
+    }
     var esp = this.get_espai_ninos();
     this.scalax = (esp.width/ ( bb.width + this.marge*2 ));
     this.scalay = (esp.height/ ( bb.height + this.marge*2 ));
@@ -231,7 +243,6 @@ Ninots.prototype.dibuixa_camp = function() {
     this.svg_ninots.appendChild(camp);
     this.camp = camp;
 
-
     // cistelles
     var d_cistella = 'm23.108-17.514c0-0.55185-0.4704-0.99937-1.0505-0.99937h-39.918c-0.58007 0-1.0505 0.44752-1.0505 0.99937v3.9975c0 0.55185 0.4704 0.99937 1.0505 0.99937h3.2676l4.0926 33.096c0.14644 1.344 2.2719 1.1061 2.0866-0.23345l-0.39266-3.1762s0.04265 0.04637 0.04265 0.04637l4.6212-3.86s5.4677 5.7764 5.4677 5.7764c0.38825 0.41014 1.0526 0.44332 1.4837 0.07395 0.02731-0.02339 0.05315-0.04797 0.07774-0.07395 0 0 5.4572-5.7718 5.4572-5.7718l4.6168 3.8558 0.04223-0.04577-0.39266 3.1754c-0.1853 1.3396 1.9402 1.5774 2.0866 0.23345l4.0926-33.096h3.0959c0.33258 0.05217 0.67104-0.05037 0.91054-0.27603 0.0088-0.0078 0.01744-0.01579 0.02584-0.02379 0.2332-0.22686 0.3393-0.54566 0.28594-0.85886l-6e-6 -3.8384m-39.918 0.99937h37.817v1.9987h-37.817v-1.9987m6.6845 3.9975h8.8382l0.91138 0.40674-5.2901 2.3603-4.4594-2.7671m15.609 0h8.8374l-4.4592 2.7667-5.2897-2.3599 0.91159-0.40674m-17.837 1.0036 4.4506 2.7611-3.8941 1.7375-0.55654-4.4986m28.903 0-0.55633 4.4984-3.8937-1.7371 4.45-2.7613m-14.451 0.50688 5.6944 2.5406-5.6946 3.533-5.6944-3.5334 5.6946-2.5406v4e-4m-7.9314 3.5388 6.0087 3.7277-5.233 3.2468-5.7133-4.7716 4.9376-2.2028m15.862 0 4.9376 2.2028-5.7131 4.772-5.233-3.2468 6.0085-3.7281m-21.337 4.4148 4.4227 3.6937-3.6831 2.285-0.73953-5.9786m26.811 0-0.73953 5.9786-3.6831-2.285 4.4227-3.6937m-13.405 0.50628 5.5166 3.4228-5.5166 4.6077-5.5166-4.6077 5.5166-3.4228m-7.3438 4.5565 5.7513 4.8036-4.4756 3.7382-5.5658-5.8803 4.2901-2.6615m14.688 0 4.2905 2.6619s-5.5626 5.8835-5.5626 5.8835l-4.4796-3.7414 5.7517-4.804m-19.492 5.1054s4.5015 4.7552 4.5015 4.7552l-3.547 2.9625-0.95445-7.7177m24.295 0.0026-0.95403 7.7147-3.5424-2.9587s4.4964-4.756 4.4964-4.756m-12.147 1.0256 4.6668 3.8979-4.6599 4.9285s-4.6689-4.9329-4.6689-4.9329l4.662-3.8935';
 
@@ -244,9 +255,6 @@ Ninots.prototype.dibuixa_camp = function() {
     this.cistella2.setAttributeNS(null, 'd', d_cistella);
     this.cistella2.setAttribute('class', 'cistella_camp');
     this.svg_ninots.appendChild(this.cistella2);
-
-
-
 }
 
 /**
@@ -256,22 +264,27 @@ Ninots.prototype.dibuixa_camp = function() {
 Ninots.prototype.posa_esquema = function(ninots) {
     this.empty();
     var max_id = 0;
+    if ( typeof ninots !== 'object' || typeof ninots.llista !== 'object')
+        return;
     for (var k in ninots.llista) {
         var dn = ninots.llista[k];
-        var coords_svg = this.to_coords_svg([dn.x, dn.y]);      
-        this.ninots.llista[k] = new Ninots.Ninot(this, k, dn.tipus, coords_svg, dn.despls);
+        if (isNaN(k) || isNaN(dn.x) || isNaN(dn.y)) {
+            delete ninots.llista[k];
+            continue;
+        }
+        this.ninots.llista[k] = new Ninots.Ninot(this, k, dn.tipus, [dn.x, dn.y], dn.despls);
         if (k > max_id)
-            max_id = dn.id_ninot;
+            max_id = k;
     }
     for (var k in ninots.llista) {
         var dn = ninots.llista[k];
-        if (dn.passi_a) {
+        if (! isNaN(dn.passi_a)) {
             var dninot = this.ninots.llista[k];
             var dnd = this.ninots.llista[dn.passi_a];
             dninot.passi_a = dnd;
             dninot.dibuixa_passi();
         }
-        if (dn.tira_a) {
+        if (typeof dn.tira_a === "string") {
             var dninot = this.ninots.llista[k];
             dninot.tira_a = dn.tira_a;
             dninot.dibuixa_tir();
@@ -309,14 +322,13 @@ Ninots.prototype.treu_esquema = function() {
 * @constructor
 * Ninot es la classe dels objectes que hi ha en l'esquema dels Ninots.
 */
-Ninots.Ninot = function(obj_ninots, p_id, tipus, coords_svg, despls, passi_a) {
+Ninots.Ninot = function(obj_ninots, p_id, tipus, coords, despls, passi_a) {
     this.obj_ninots = obj_ninots; // Objecte Ninots on quedarà lligat aquest ninot
     this.id_ninot = p_id; // enter identificador de ninots
     this.tipus = (tipus === undefined ? 'defensa' : tipus); //tipus de ninot
     this.despls = (despls === undefined ? [] : despls); // desplaçaments que fa el ninot
     this.passi_a = passi_a;
-    [this.x, this.y] = this.obj_ninots.to_coords_pista(coords_svg); // guardem les coordenades de pista
-    this.coords_svg = coords_svg;
+    [this.x, this.y] = coords; // guardem les coordenades de pista
 
     var tmpl = Ninots.ninots_tmpl[this.tipus];
     this.es_mou = tmpl.es_mou;
@@ -356,7 +368,6 @@ Ninots.Ninot.prototype.dibuixa_fletxa = function() {
 }
 
 Ninots.Ninot.prototype.dibuixa_tir = function() {
-    var svg = this.obj_ninots.svg_ninots;
     var inici_tir, separacio;
     var coords_cist = this.obj_ninots.get_coords_cistelles()[this.tira_a];
     if (this.despls instanceof Array && this.despls.length > 0) {
@@ -369,12 +380,14 @@ Ninots.Ninot.prototype.dibuixa_tir = function() {
     if (this.tir === undefined) {
         this.tir = document.createElementNS(Ninots.ns, 'path');
         this.tir.setAttribute('class', 'ninots_tir');
-        svg.appendChild(this.tir);
     }
+    if ( ! (this.tir.parentElement instanceof SVGElement ) )
+        this.obj_ninots.svg_ninots.appendChild(this.tir);
     var inici_tir = Ninots.get_segment(inici_tir, coords_cist, separacio)[0];
     this.tir.setAttributeNS(null, 'd', "M "+inici_tir[0]+","+inici_tir[1]+"m4.9337-13.646v4.6246l6.2149 2.6977h-25.844v4.1108h30.471v-2.1016l12.538 5.4416-12.538 5.4416v-2.1016h-30.471v4.1108h25.844l-6.2149 2.6977v4.6246l29.649-13.18v-3.1858l-29.649-13.18");
     this.tir.setAttribute('transform', 'rotate('+Ninots.angle_entre_punts(inici_tir, coords_cist)+','+inici_tir[0]+","+inici_tir[1]+')');
 }
+
 Ninots.Ninot.prototype.dibuixa_passi = function() {
     var svg = this.obj_ninots.svg_ninots;
     var inici_passi = this.get_coords_svg();
@@ -389,10 +402,12 @@ Ninots.Ninot.prototype.dibuixa_passi = function() {
     if (this.passi === undefined) {
         this.passi = Ninots.createPath(svg, 'black', '2px');
         this.passi.setAttributeNS(null, 'stroke-dasharray', '4');
-        svg.appendChild(this.passi);
     }
+    if ( ! (this.passi.parentElement instanceof SVGElement) )
+        svg.appendChild(this.passi);
     this.passi.setAttributeNS(null, 'd', "M "+inici_passi[0]+","+inici_passi[1]+" "+fi_passi[0]+","+fi_passi[1]);
 }
+
 Ninots.Ninot.prototype.has_ball_end = function() {
     if (this.amb_pilota && this.passi_a === undefined)
         return true;
@@ -411,6 +426,10 @@ Ninots.Ninot.prototype.resize = function() {
     var d = this.ninot.getAttributeNS(null, 'd');
     var p = this.get_coords_svg();
 
+    [this.ninot, this.fletxa].forEach(function(path) {
+        if (! path.parentElement)
+            this.obj_ninots.svg_ninots.appendChild(path);
+    }, this);
     this.fletxa.setAttributeNS(null, "d", Ninots.updateSplines(this.despls, this.obj_ninots));
 
     d = 'M'+p[0]+','+p[1]+'\n'+d.split('\n')[1];

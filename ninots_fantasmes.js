@@ -43,17 +43,11 @@ for (k in ninots_abans_phantom) {
         Ninots[k] = ninots_abans_phantom[k];
 }
 
-Ninots.torna_angle = function(x1, y1, x2, y2) {
-    rot = Math.atan( (y2 - y1) / (x2 - x1) );
-    //            rot *= Math.sign(y - ninot.phantom_y) + Math.PI / 2;
-    rot -= (Math.sign(x2 - x1) - 1) * Math.PI / 2;
-    return rot + Math.PI / 2;
-}
-
 Ninots.prototype.startPhantoms = function() {
     this.stopPhantoms();
     this.mouNinots = setInterval(Ninots.mouPhantoms, 40, this);
 }
+
 Ninots.prototype.stopPhantoms = function() {
     if (this.mouNinots !== undefined)
         clearInterval(this.mouNinots);
@@ -65,6 +59,7 @@ Ninots.prototype.stopPhantoms = function() {
         }
     }
 }
+
 Ninots.mouPhantoms = function(self_ninots, anim) {
     // TODO: revisar millora amb https://bl.ocks.org/mbostock/1705868 o https://css-tricks.com/svg-line-animation-works/
     if (anim !== undefined)
@@ -85,19 +80,22 @@ Ninots.Ninot.prototype.ninots_ninot_resize_abans_phantom = Ninots.Ninot.prototyp
 
 Ninots.Ninot.prototype.resize = function() {
     this.ninots_ninot_resize_abans_phantom();
-    var d = this.ninot.getAttributeNS(null, 'd');    
-    this.phantom.setAttributeNS(null, 'd', d);    
+    var d = this.ninot.getAttributeNS(null, 'd');
+    if (this.phantom !== undefined)
+        this.phantom.setAttributeNS(null, 'd', d);    
 }
 
 Ninots.Ninot.prototype.ninots_ninot_esborra_abans_phantom = Ninots.Ninot.prototype.esborra;
 
 Ninots.Ninot.prototype.esborra = function() {
     this.ninots_ninot_esborra_abans_phantom();
-    this.phantom.remove();    
+    if (this.phantom instanceof SVGPathElement)
+        this.phantom.remove();    
 }
 
 
 Ninots.Ninot.prototype.posaPhantom = function(percentatge) {
+    if (isNaN(this.x) || isNaN(this.y)) return;
     var coords_svg = this.obj_ninots.to_coords_svg([this.x, this.y]);
     if ( this.phantom === undefined || this.phantom.tagName !== 'path' ) {
         this.phantom = this.tmpl.dibuixa(coords_svg, this.obj_ninots.svg_ninots, 'ninots_phantom');            
@@ -106,10 +104,7 @@ Ninots.Ninot.prototype.posaPhantom = function(percentatge) {
     var l = tl * percentatge / 100;
 
     var p = this.fletxa.getPointAtLength(l);
-    var fsx = this.obj_ninots.scalax / this.fletxa_scala[0];
-    var fsy = this.obj_ninots.scalay / this.fletxa_scala[1];
-    var [ptx, pty] = [p.x * fsx, p.y * fsy]; // nou punt phantom
-    var [dx, dy] = [ptx - coords_svg[0], pty - coords_svg[1]];
+    var [dx, dy] = [p.x - coords_svg[0], p.y - coords_svg[1]];
 
     // calcula rotacio i guarda rotacio inicial
     var rot = 0;
@@ -118,7 +113,8 @@ Ninots.Ninot.prototype.posaPhantom = function(percentatge) {
             rot = this.phantom_rotini;
         }
     } else {
-        rot = Ninots.torna_angle(this.phantom_x, this.phantom_y, dx, dy);
+        if (! ( isNaN(this.phantom_x) || isNaN(this.phantom_y)) )
+            rot = Ninots.angle_entre_punts([this.phantom_x, this.phantom_y], [dx, dy]) * Math.PI / 180 + Math.PI / 2;
         if (percentatge == 1) {
             this.phantom_rotini = rot;
         }
@@ -129,9 +125,9 @@ Ninots.Ninot.prototype.posaPhantom = function(percentatge) {
         this.ninot.setAttribute('transform', 'rotate('+(this.phantom_rotini * 180 / Math.PI)+','+coords_svg[0]+','+coords_svg[1]+')');
     }
     if (! isNaN(rot)) 
-        this.phantom.setAttribute('transform', 'rotate('+(rot * 180 / Math.PI)+','+ptx+','+pty+') translate('+dx+','+dy+')');
+        this.phantom.setAttribute('transform', 'rotate('+(rot * 180 / Math.PI)+','+p.x+','+p.y+') translate('+dx+','+dy+')');
     else
         this.phantom.setAttribute('transform', 'translate('+dx+','+dy+')');
-
+    if ( ! (this.phantom.parentElement instanceof SVGElement))
+        this.obj_ninots.svg_ninots.appendChild(this.phantom);
 }
-
